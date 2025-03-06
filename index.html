@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MTR Explorer - Darkmode &amp; Multi-Route</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  />
+  <style>
+    /* ===================== Grundlegende Stile ===================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    /* Darkmode-Styles */
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark .navbar {
+      background-color: #1f1f1f;
+    }
+    body.dark .card,
+    body.dark .travel-form,
+    body.dark .route-result,
+    body.dark .route-card {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    body.dark .route-list {
+      border-left-color: #555;
+    }
+
+    /* ===================== Navigation ===================== */
+    .navbar {
+      background-color: #b31b1b;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .nav-logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 1rem;
+      flex-grow: 1;
+    }
+    .nav-links li a {
+      text-decoration: none;
+      color: #fff;
+      font-weight: 500;
+      transition: color 0.3s;
+      cursor: pointer;
+    }
+    .nav-links li a:hover {
+      color: #ffcccb;
+    }
+    /* Darkmode Toggle Button */
+    #darkModeToggle {
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      background-color: #fff;
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark #darkModeToggle {
+      background-color: #333;
+      color: #fff;
+    }
+
+    /* ===================== Seiten-Bereiche ===================== */
+    .page {
+      display: none;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .page.active {
+      display: block;
+    }
+
+    /* ===================== HOME-Bereich ===================== */
+    #home h1 {
+      margin-bottom: 1rem;
+    }
+    #home p {
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 2rem 1rem;
+      text-align: center;
+      transition: transform 0.2s;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card img.icon {
+      width: 50px;
+      height: 50px;
+      margin-bottom: 0.5rem;
+    }
+    .card i {
+      margin-bottom: 0.5rem;
+      color: #b31b1b;
+      display: block;
+      font-size: 2rem;
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    /* ===================== TRAVEL-Bereich ===================== */
+    #travel h2 {
+      margin-bottom: 1.5rem;
+    }
+    .travel-form {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+    .travel-form label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    .travel-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+    .travel-row input[type="text"] {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .btn-group button {
+      padding: 0.3rem 0.5rem;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background-color: #e9ecef;
+      border-radius: 4px;
+    }
+    .travel-options {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .travel-options select {
+      padding: 0.3rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .travel-form button.find-route {
+      background-color: #b31b1b;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    .travel-form button.find-route:hover {
+      background-color: #a01414;
+    }
+
+    /* ===================== ROUTE-Anzeige (Travel) ===================== */
+    .route-result {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .route-result h3 {
+      margin-bottom: 0.5rem;
+    }
+    .route-list {
+      position: relative;
+      margin-left: 1rem;
+      padding-left: 1rem;
+      border-left: 3px solid #aaa;
+      list-style: none;
+    }
+    .route-item {
+      margin: 1rem 0;
+      position: relative;
+    }
+    .route-dot {
+      position: absolute;
+      left: -0.5rem;
+      width: 0.75rem;
+      height: 0.75rem;
+      background-color: #333;
+      border-radius: 50%;
+      transform: translate(-50%, 0);
+      top: 0.4rem;
+    }
+    .route-station {
+      font-weight: bold;
+    }
+    .route-info {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* ===================== ROUTES-Bereich ===================== */
+    #routes h2 {
+      margin-bottom: 1.5rem;
+    }
+    .route-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .route-card h3 {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVIGATION -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">MTR Explorer</div>
+      <ul class="nav-links">
+        <li><a data-target="home">Home</a></li>
+        <li><a data-target="travel">Travel</a></li>
+        <li><a data-target="map">Map</a></li>
+        <li><a data-target="routes">Routes</a></li>
+        <li><a data-target="stations">Stations</a></li>
+      </ul>
+      <button id="darkModeToggle">Dark Mode</button>
+    </div>
+  </nav>
+
+  <!-- STARTSEITE / HOME -->
+  <section id="home" class="page active">
+    <h1>Welcome to MTR Explorer</h1>
+    <p>
+      This is a tool to explore Minecraft Transit Railway networks.
+      You can plan your journey over the network and view and report incidents
+      on the network. You can also view stations and routes.
+    </p>
+    <div class="cards">
+      <div class="card" data-target="travel">
+        <img src="images/train.png" alt="Travel" class="icon" />
+        <h2>Travel</h2>
+      </div>
+      <div class="card" data-target="map">
+        <img src="images/map.png" alt="Map" class="icon" />
+        <h2>Map</h2>
+      </div>
+      <div class="card" data-target="routes">
+        <img src="images/maps-and-flags.png" alt="Routes" class="icon" />
+        <h2>Routes</h2>
+      </div>
+      <div class="card" data-target="stations">
+        <i class="fa-solid fa-building"></i>
+        <h2>Stations</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRAVEL -->
+  <section id="travel" class="page">
+    <h2>Travel</h2>
+    <div class="travel-form">
+      <label>Favorite paths saved in profile.</label>
+      <!-- Datalist für Autocomplete -->
+      <datalist id="stationSuggestions"></datalist>
+      <div class="travel-row">
+        <input id="startStation" type="text" placeholder="Start Station" list="stationSuggestions" />
+        <div class="btn-group">
+          <button title="Move up">&#x25B2;</button>
+          <button title="Move down">&#x25BC;</button>
+        </div>
+      </div>
+      <div class="travel-row">
+        <input id="endStation" type="text" placeholder="Destination Station" list="stationSuggestions" />
+        <div class="btn-group">
+          <button title="Move up">&#x25B2;</button>
+          <button title="Move down">&#x25BC;</button>
+        </div>
+      </div>
+      <div class="travel-options">
+        <label for="duration">Prefer minimal duration:</label>
+        <select id="duration">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <button class="find-route" id="findRouteBtn">Find route</button>
+    </div>
+    <div id="routeResult" class="route-result" style="display: none;"></div>
+  </section>
+
+  <!-- MAP (Platzhalter) -->
+  <section id="map" class="page">
+    <h2>Map</h2>
+    <p>Here could be your map view.</p>
+  </section>
+
+  <!-- ROUTES -->
+  <section id="routes" class="page">
+    <h2>Routes</h2>
+    <div id="routesContainer"></div>
+  </section>
+
+  <!-- STATIONS (Platzhalter) -->
+  <section id="stations" class="page">
+    <h2>Stations</h2>
+    <p>Here could be your stations overview.</p>
+  </section>
+
+  <!-- ===================== JavaScript ===================== -->
+  <script>
+    // Funktion zum "Title Case": Jeden ersten Buchstaben eines Wortes groß
+    function capitalizeWords(str) {
+      return str.split(' ').map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }).join(' ');
+    }
+
+    // --- ROUTE-DATEN ---
+    const routes = [
+      {
+        name: "North Coast Line",
+        color: "orange",
+        stops: ["grand central", "sink chang", "sunk wiau", "kongtan"]
+      },
+      {
+        name: "metro south continental",
+        color: "brown",
+        stops: ["church station", "stormbay metro"]
+      },
+      {
+        name: "Village Rail",
+        color: "pink",
+        stops: ["panama canal", "la pau"]
+      },
+      {
+        name: "Mountain line",
+        color: "turquoise",
+        stops: ["grand central", "mountain village"]
+      },
+      {
+        name: "brown line",
+        color: "brown",
+        stops: ["mountain village", "grass mountain", "birch sea", "big jungle", "grassy village"]
+      },
+      {
+        name: "airport express",
+        color: "gray",
+        stops: ["grand central", "airport"]
+      },
+      {
+        name: "Cyan Heights Ferry Line",
+        color: "cyan",
+        stops: ["cyan heights ferry pier", "spawn industry island pier"]
+      }
+    ];
+
+    // --- 1) Autocomplete: Alle Stationen sammeln und in die Datalist einfügen ---
+    const allStations = new Set();
+    for (const route of routes) {
+      for (const stop of route.stops) {
+        allStations.add(stop);
+      }
+    }
+    const stationSuggestions = document.getElementById("stationSuggestions");
+    allStations.forEach(station => {
+      const option = document.createElement("option");
+      option.value = capitalizeWords(station);
+      stationSuggestions.appendChild(option);
+    });
+
+    // --- 2) Graph für Umstiege (BFS) ---
+    function buildGraph(routes) {
+      const graph = {};
+      for (let r of routes) {
+        const { name, color, stops } = r;
+        for (let i = 0; i < stops.length; i++) {
+          const current = stops[i].toLowerCase();
+          if (!graph[current]) graph[current] = [];
+          if (i < stops.length - 1) {
+            const next = stops[i + 1].toLowerCase();
+            graph[current].push({ station: next, route: name, color });
+            if (!graph[next]) graph[next] = [];
+            graph[next].push({ station: current, route: name, color });
+          }
+        }
+      }
+      return graph;
+    }
+    function findPathWithTransfers(startStation, endStation, graph) {
+      const start = startStation.toLowerCase().trim();
+      const end = endStation.toLowerCase().trim();
+      if (!graph[start] || !graph[end]) return null;
+      const queue = [start];
+      const visited = new Set([start]);
+      const parents = {};
+      while (queue.length > 0) {
+        const current = queue.shift();
+        if (current === end) {
+          return reconstructPath(end, parents, start);
+        }
+        for (let edge of graph[current]) {
+          const nextStation = edge.station;
+          if (!visited.has(nextStation)) {
+            visited.add(nextStation);
+            parents[nextStation] = { from: current, route: edge.route, color: edge.color };
+            queue.push(nextStation);
+          }
+        }
+      }
+      return null;
+    }
+    function reconstructPath(end, parents, start) {
+      const path = [];
+      let current = end;
+      while (current !== start) {
+        const parentInfo = parents[current];
+        if (!parentInfo) return null;
+        path.push({ station: current, route: parentInfo.route, color: parentInfo.color });
+        current = parentInfo.from;
+      }
+      path.push({ station: start, route: null, color: null });
+      path.reverse();
+      return path;
+    }
+    const graph = buildGraph(routes);
+
+    // --- 3) Navigation zwischen Seiten ---
+    const clickableElements = document.querySelectorAll('[data-target]');
+    const pages = document.querySelectorAll('.page');
+    clickableElements.forEach(elem => {
+      elem.addEventListener('click', (event) => {
+        event.preventDefault();
+        const targetId = elem.getAttribute('data-target');
+        pages.forEach(page => page.classList.remove('active'));
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) targetSection.classList.add('active');
+      });
+    });
+
+    // --- 4) "Find Route" Event im TRAVEL-Bereich ---
+    const findRouteBtn = document.getElementById('findRouteBtn');
+    const routeResultDiv = document.getElementById('routeResult');
+    findRouteBtn.addEventListener('click', () => {
+      const startStationInput = document.getElementById('startStation').value;
+      const endStationInput = document.getElementById('endStation').value;
+      if (!startStationInput || !endStationInput) {
+        routeResultDiv.style.display = 'block';
+        routeResultDiv.innerHTML = "<p>Please enter both start and end stations.</p>";
+        return;
+      }
+      const path = findPathWithTransfers(startStationInput, endStationInput, graph);
+      if (!path) {
+        routeResultDiv.style.display = 'block';
+        routeResultDiv.innerHTML = `<p>No route found from "${startStationInput}" to "${endStationInput}".</p>`;
+        return;
+      }
+      let html = `<h3>Route from "${capitalizeWords(startStationInput)}" to "${capitalizeWords(endStationInput)}"</h3>`;
+      html += `<ul class="route-list">`;
+      for (let i = 0; i < path.length; i++) {
+        const item = path[i];
+        const stationName = capitalizeWords(item.station);
+        let infoText = "";
+        if (i < path.length - 1) {
+          const next = path[i + 1];
+          infoText = `Take <strong>${capitalizeWords(next.route)}</strong> to <strong>${capitalizeWords(endStationInput)}</strong>`;
+        } else {
+          infoText = `Arrived at destination`;
+        }
+        html += `
+          <li class="route-item">
+            <div class="route-dot"></div>
+            <div class="route-station" style="color:${item.color || "#333"}">
+              ${stationName}
+            </div>
+            <div class="route-info">
+              ${infoText}
+            </div>
+          </li>
+        `;
+      }
+      html += `</ul>`;
+      routeResultDiv.innerHTML = html;
+      routeResultDiv.style.display = 'block';
+    });
+
+    // --- 5) Routen-Übersicht im ROUTES-Bereich ---
+    function populateRoutesOverview() {
+      const container = document.getElementById("routesContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      routes.forEach(route => {
+        const routeName = capitalizeWords(route.name);
+        const stopsHTML = route.stops.map(s => capitalizeWords(s)).join(" &rarr; ");
+        container.innerHTML += `
+          <div class="route-card" style="border-left: 5px solid ${route.color};">
+            <h3>${routeName}</h3>
+            <p>${stopsHTML}</p>
+          </div>
+        `;
+      });
+    }
+    populateRoutesOverview();
+
+    // --- 6) Darkmode Toggle ---
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    darkModeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      darkModeToggle.textContent = document.body.classList.contains("dark") ? "Light Mode" : "Dark Mode";
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
